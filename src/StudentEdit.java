@@ -1,33 +1,107 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
-/**
- * Write a description of class StudentEdit here.
- *
- * @author (your name)
- * @version (a version number or a date)
- */
-public class StudentEdit
+public class StudentEdit implements ActionListener
 {
-    // instance variables - replace the example below with your own
-    private int x;
+    public JLabel label = new JLabel("Student Edit");
+    public JTextField name = new JTextField();
+    public JTextField competeDiv = new JTextField();
+    public JTextField actualDiv = new JTextField();
+    public JTextField school = new JTextField();
+    public JTextField num = new JTextField();
 
-    /**
-     * Constructor for objects of class StudentEdit
-     */
-    public StudentEdit()
-    {
-        // initialise instance variables
-        x = 0;
+    public JButton doneButton = new JButton("Done");
+
+    public JFrame frame = new JFrame();
+
+    boolean editing;
+    
+    public StudentEdit(boolean edit) {
+        
+        frame.setLocationRelativeTo(null);
+
+        editing = edit;
+        
+        if(editing) label.setText("Student Edit");
+        else label.setText("Student Creation");
+
+        frame.setMinimumSize( new Dimension( 400, 400 ) );
+
+        name.setText("Name");
+        competeDiv.setText("Compete Division");
+        actualDiv.setText("Actual Division");
+        school.setText("School");
+        num.setText("Number");
+
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        panel.setLayout(new GridLayout(7, 1));
+
+        panel.add(label);
+
+        panel.add(name);
+        panel.add(competeDiv);
+        panel.add(actualDiv);
+        panel.add(school);
+        panel.add(num);
+
+        panel.add(doneButton);
+
+        doneButton.addActionListener(this);
+        doneButton.setActionCommand("Done");
+
+        frame.add(panel);
+
+        frame.pack();
+        frame.setVisible(true);
     }
 
-    /**
-     * An example of a method - replace this comment with your own
-     *
-     * @param  y  a sample parameter for a method
-     * @return    the sum of x and y
-     */
-    public int sampleMethod(int y)
-    {
-        // put your code here
-        return x + y;
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+
+        if(Data.runner != null) {
+            if(!editing) {
+                String sName = name.getText();
+                String sComp = competeDiv.getText();
+                String sAct = actualDiv.getText();
+                String sSch = school.getText();
+                String sNum = num.getText();
+
+                Student newS = new Student();
+                newS.name = sName;
+                newS.competeDiv = sComp;
+                newS.actualDiv = sAct;
+                newS.school = sSch;
+                newS.num = sNum;
+
+                Data.runner.sHandler.addStudent(newS);
+                out(sName + " Added Successfully");
+            } else {
+                String sName = name.getText();
+                String sComp = competeDiv.getText();
+                String sAct = actualDiv.getText();
+                String sSch = school.getText();
+                String sNum = num.getText();
+                
+                Student newS = Data.runner.sHandler.getByName(sName);
+                
+                if(newS == null) {
+                    out("Student not found");
+                    return;
+                }
+                
+                newS.competeDiv = sComp;
+                newS.actualDiv = sAct;
+                newS.school = sSch;
+                newS.num = sNum;
+                
+                out(sName + " Modified successfully");
+            }
+        } else {
+            System.out.println("[GUI] RUNNER NOT FOUND");
+        }
     }
+    
+    public void out(String s) { Data.runner.out(s); }
 }

@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+
 import Logging.*;
 import Util.*;
 
@@ -7,7 +8,7 @@ public class Runner implements InputUser, Runnable
 {
 
     //Constants
-    static final int PRINT_SLEEP_TIME = 5;
+    static int PRINT_SLEEP_TIME = 5;
 
     //Booleans
     boolean DEBUG = true;
@@ -15,7 +16,6 @@ public class Runner implements InputUser, Runnable
 
     //Useful Objects
     ScoreReader scoreReader;
-    ScoreWriter scoreWriter;
     StudentHandler sHandler;
     Sorter sorter;
 
@@ -26,12 +26,18 @@ public class Runner implements InputUser, Runnable
     //GUI
     //Terminal term = new Terminal();
     MainGUI gui = new MainGUI();
-    
+
     //Stuff
     ArrayList<TestScores> testScores = new ArrayList<TestScores>();
+    ArrayList<String> commands = new ArrayList<String>();
 
     public static void main(String[] args) {
-        new Runner();
+        Runner r = new Runner();
+
+        for(String s : args) {
+            r.out("Using auto command: " + s);
+            r.inputText(s);
+        }
     }
 
     public Runner() {
@@ -42,9 +48,14 @@ public class Runner implements InputUser, Runnable
 
         outAll("Initializing...");
 
+        /*
+        outAll("Deleting previous results...");
+        delete( new File("Sorted") );
+        outAll("Done. Creating objects...");
+         */
+
         //Create useful objects
         scoreReader = new ScoreReader();
-        scoreWriter = new ScoreWriter();
         sHandler = new StudentHandler();
         sorter = new Sorter();
 
@@ -60,9 +71,10 @@ public class Runner implements InputUser, Runnable
             outAll("Reading " + f.getName() );
             //sHandler.pack( scoreReader.read( f ) );
             testScores.add( scoreReader.read( f ) );
+            debug("Packing " + f.getName());
             sHandler.pack( testScores.get( testScores.size() - 1 ) );
         }
-        
+
         out("Students: ");
 
         for( Student s : sHandler.students ) {
@@ -75,12 +87,90 @@ public class Runner implements InputUser, Runnable
         start();
     }
 
+    public void combine() {
+        delete( new File("Sorted/Combine.txt") );
+
+        try {
+            //add( new File("Sorted") );
+            
+            add( new File("Sorted/Total") );
+            add( new File("Sorted/CompDiv") );
+            add( new File("Sorted/Special") );
+            add( new File("Sorted/Test") );
+            add( new File("Sorted/Team") );
+            
+            //add( new File("Sorted/ActDiv") );
+
+        }catch(Exception e) {
+            out("Trouble while combining files");
+            e.printStackTrace();
+        }
+    }
+
+    public void add(File f) throws Exception {
+        if( f.isDirectory() ) {
+            debug("Entering " + f.getName() + "/");
+            File[] files = f.listFiles();
+
+            for(File file : files)  {
+                try{
+                    add(file);
+                }catch(Exception e) {
+                    
+                }
+            }
+            
+            return;
+        }
+        
+        debug("Combining " + f.getName());
+
+        Scanner scanny;
+        FileWriter writer;
+
+        scanny = new Scanner(f);
+        writer = new FileWriter( new File( "Sorted/Combine.txt" ) , true );
+
+        while(scanny.hasNextLine()) {
+            String cp = scanny.nextLine();
+            writer.write(cp);
+            writer.write( System.getProperty("line.separator") );
+        }
+
+        writer.write( System.getProperty("line.separator") );
+        writer.write( "-------------------------------" );
+        writer.write( System.getProperty("line.separator") );
+
+        scanny.close();
+        writer.close();
+
+    }
+
+    public void delete( File f ) {
+        if( f.isDirectory() ) {
+
+            for( File file : f.listFiles() ) {
+                delete(file);
+            }
+
+        }
+        else {
+
+            try {
+                f.delete();
+                debug("Deleted " + f.getName());
+            }catch(Exception e) {
+                out("Can't delete " + f.getName() );
+            }
+
+        }
+    }
+
     public void start() {
         if(!going) {
             going = true;
             new Thread(this).start();
         }
-
     }
 
     public void stop() {
@@ -99,7 +189,7 @@ public class Runner implements InputUser, Runnable
 
         outAll("Ready!");
 
-        out("Type \"help\" for a list of commands");
+        out("Type \"help\" for a list of commands, or use the buttons!");
 
         while(going) {
             try{
@@ -138,19 +228,28 @@ public class Runner implements InputUser, Runnable
 
         outAll("Done");
         outAll("Exit");
+
+        sleep(1000);
+
         System.exit(0);
     }
 
     public void tick() {
-
+        while(commands.size() > 0) doCommand(commands.remove(0));
     }
 
-    public void inputText(String s) {
+    public synchronized void inputText(String s) {
+        commands.add(s);
+    }
+
+    public void doCommand(String s) {
         debug("COMMAND: " + s);
-        
+
         if( Command.is( "help", s ) ) {
             out("stop - stop program");
             out("students - list students");
+            out("sort - sorts scores");
+            out("save - save students");
         }
 
         if( Command.is( "stop", s ) ) {
@@ -163,14 +262,38 @@ public class Runner implements InputUser, Runnable
                 out(student.toString());
             }
         }
-        
+
         if( Command.is( "sort", s ) ) {
+            /*
+            out("Deleting old results...");
+            delete( new File("Sorted") );
+            out("Done. Sorting...");
+             */
             sorter.sort();
+            out("Combining sorted output...");
+            combine();
+            out("Done");
+        }
+
+        if( Command.is( "save", s ) ) {
+            sHandler.saveAll();
+        }
+
+        if( Command.is( "NEWS", s ) ) {
+            new StudentEdit(false);
+        }
+
+        if( Command.is( "MODS", s ) ) {
+            new StudentEdit(true);
+        }
+
+        if( Command.is( "DELS", s ) ) {
+            new StudentDelete();
         }
     }
 
     public void out(String s) {
-        gui.out(s);
+        gui.out("[RUNNER] " + s);
         logger.log(s);
 
         System.out.println("[STANDARD] " + s );

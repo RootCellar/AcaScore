@@ -34,7 +34,7 @@ public class Student
     }
     
     public String toString() {
-        return name + ", " + competeDiv + ", " + actualDiv + ", " + school + ", " + num + ", " + scores.toString();
+        return name + ", " + competeDiv + ", " + actualDiv + ", " + school + ", " + num ; //+ ", " + scores.toString();
     }
     
     public String toStringShort() {

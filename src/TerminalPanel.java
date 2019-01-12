@@ -12,7 +12,8 @@ public class TerminalPanel extends JPanel implements KeyListener {
     private int logLength;
     private InputUser user;
     public TerminalPanel() {
-        logLength=10000;
+        logLength=100000;
+        
         this.setSize(100,100);
         text.setEditable(false);
         this.setLayout(new BorderLayout(1,1));
@@ -56,7 +57,7 @@ public class TerminalPanel extends JPanel implements KeyListener {
         text.append(w+"\n");
         try{
             //Thread.sleep(5);
-            if(text.getDocument().getLength()>10000) {
+            if(text.getDocument().getLength()>logLength) {
                 String text2=text.getDocument().getText(0, text.getDocument().getLength());
                 String text3=text2.substring( text2.length()-logLength, text2.length() );
                 text.setText(text3);
