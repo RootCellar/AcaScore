@@ -35,7 +35,7 @@ public class MainGUI implements ActionListener
         panel.add( getNewButton("Mod Student", "MODS") );
         panel.add( getNewButton("Sort", "sort") );
         panel.add( getNewButton("Exit", "stop") );
-        panel.add( getNewButton("BLANK", "BLANK") );
+        panel.add( getNewButton("Students", "students") );
         panel.add( getNewButton("BLANK", "BLANK") );
         panel.add( getNewButton("BLANK", "BLANK") );
         panel.add( getNewButton("Delete Student", "DELS") );

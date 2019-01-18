@@ -2,7 +2,7 @@ public class Score
 {
     String name;
     int score;
-    int calcScore;
+    //int calcScore;
 
     String studentNumber;
 
@@ -11,7 +11,7 @@ public class Score
         score = s;
         studentNumber = num;
 
-        calcScore();
+        //calcScore();
     }
 
     public String getName() {
@@ -19,17 +19,17 @@ public class Score
     }
 
     public int getScore() {
-        calcScore();
+        //calcScore();
 
-        return calcScore;
+        return score;
     }
 
     public void calcScore() {
-        calcScore = score * 20;
+        //calcScore = score * 20;
     }
     
     public String toString() {
-        return "{ " + name + ", " + score + ", " +calcScore + ", " +studentNumber + " }";
+        return "{ " + name + ", " + score + ", " +studentNumber + " }";
     }
 
     public static Score parse(String testName, String n) {

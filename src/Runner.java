@@ -81,6 +81,11 @@ public class Runner implements InputUser, Runnable
             //out(s.toString());
             out(s.name);
         }
+        
+        for(TestScores t : testScores) {
+            out(t.name + ": " + t.scores.count());
+            //out(t.toString());
+        }
 
         outAll("Finished read");
 
@@ -207,6 +212,8 @@ public class Runner implements InputUser, Runnable
                 }
 
             }catch(Exception e) {
+                
+                e.printStackTrace();
 
                 outAll("Exception in main loop");
                 interInRow++;

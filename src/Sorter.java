@@ -15,9 +15,9 @@ public class Sorter
         new File("Sorted/Special").mkdir();
     }
 
-    public static final int NAME_WIDTH = 30;
+    public static final int NAME_WIDTH = 25;
     public static final int SCHOOL_WIDTH = 10;
-    public static final int COMPETE_WIDTH = 8;
+    public static final int COMPETE_WIDTH = 10;
     public static final int NUM_WIDTH = 5;
     public static final int SCORE_WIDTH = 6;
 
@@ -371,13 +371,15 @@ public class Sorter
 
         //debug("Writing...");
 
-        try{
+        int teamTotal = getTeamTotal(school);
+
+        try {
             File toWrite = new File("Sorted/Team/" + school + ".txt");
             toWrite.createNewFile();
 
             FileWriter writer = new FileWriter( toWrite );
 
-            writer.write( "AcaDeca Totals - " + school + "[" + list.size() + "]");
+            writer.write( "AcaDeca Totals - " + school + "[" + list.size() + "] - " + teamTotal);
             writer.write( System.getProperty("line.separator") );
             writer.write( System.getProperty("line.separator") );
 
@@ -415,6 +417,8 @@ public class Sorter
                 write(writer, "" + calcTotal(s), SCORE_WIDTH );
                 writer.write( "|" );
 
+                if(isPartOfTeam(s)) writer.write("*");
+
                 writer.write( System.getProperty("line.separator") );
             }
 
@@ -428,7 +432,7 @@ public class Sorter
             return;
         }
     }
-    
+
     public void sortByDivision(String division) {
         //debug("Sorting by " + test + " " + div + "...");
 
@@ -549,23 +553,11 @@ public class Sorter
 
         Timer delete = new Timer();
         delete.start();
-        
-        Data.runner.delete(new File("Sorted"));
-        
-        delete.stop();
-        
-        /*
-        out("Finding divisions...");
-        for(String s : getDivisions()) {
-            out(s);
-        }
 
-        out("Finding schools...");
-        for(String s : getSchools()) {
-            out(s);
-        }
-        */
-       
+        Data.runner.delete(new File("Sorted"));
+
+        delete.stop();
+
         out("Sorting by total...");
         sortByTotal();
 
@@ -578,15 +570,14 @@ public class Sorter
                 debug("Sorting " + s.name + " - " + st);
                 sortBy( s.name, st );
             }
-
         }
-        
+
         out("Sorting by team...");
         for(String s : getSchools()) {
             debug("Sorting by " + s);
             sortBySchool(s);
         }
-        
+
         out("Sorting by division...");
         for(String s : getDivisions()) {
             debug("Sorting by " + s);
@@ -598,6 +589,57 @@ public class Sorter
         overall.stop();
         out("Took " + overall.takenInS() + " seconds");
         out("Deletion took " + delete.takenInS() + " seconds");
+    }
+
+    public int getTeamTotal(String n) {
+        ArrayList<Student> team = new ArrayList<Student>();
+
+        for(Student s : Data.runner.sHandler.students) {
+            if(s.school.equals(n)) team.add(s);
+        }
+
+        int total = 0;
+
+        for(int i = 0; i<team.size(); i++) {
+            Student s = team.get(i);
+            if(!isPartOfTeam(s)) {
+                team.remove(s);
+                i--;
+                debug(s.name + " is not part of a team: " + s.num);
+            }
+            else debug(s.name + " is part of a team: " + s.num);
+        }
+
+        for(Student s : team) {
+            total += calcTotal(s);
+        }
+
+        return total;
+    }
+
+    public boolean isPartOfTeam(Student s) {
+        String num = s.num;
+
+        boolean parsed = false;
+        int iNum = -1;
+        while(!parsed) {
+            if(num.length() < 1) return false;
+
+            try{
+                iNum = Integer.parseInt(num);
+                parsed = true;
+            }catch(Exception e) {
+                num = num.substring(1);
+            }
+        }
+
+        iNum %= 100;
+        iNum /= 10;
+        if(iNum == 0) {
+            return true;
+        }
+
+        return false;
     }
 
     public ArrayList<String> getSchools() {
