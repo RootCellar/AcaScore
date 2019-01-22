@@ -1,10 +1,18 @@
+/*
+*   Sorting the scores in the many different ways that
+*   they need to be sorted
+*/
+
 import java.io.*;
 import java.util.ArrayList;
 
 public class Sorter
 {
 
-    static {
+    //Setup files
+    static { //When this class is loaded, ...
+
+        //Make all of these folders
         new File("Sorted").mkdir();
 
         new File("Sorted/Test").mkdir();
@@ -15,11 +23,21 @@ public class Sorter
         new File("Sorted/Special").mkdir();
     }
 
+    //Constants
     public static final int NAME_WIDTH = 25;
     public static final int SCHOOL_WIDTH = 10;
     public static final int COMPETE_WIDTH = 10;
     public static final int NUM_WIDTH = 5;
     public static final int SCORE_WIDTH = 6;
+
+    /*
+    *   Begin the many different sorting methods
+    *   Steps:
+    *       0. Start counting at 0
+    *       1. Take the students we need right now, put them in a list
+    *       2. Bubble sort by the score that matters right now
+    *       3. Write to file
+    */
 
     public void sortByTotal() {
         //debug("Sorting by total...");
@@ -352,7 +370,7 @@ public class Sorter
                 Student mv = list.remove(k);
                 list.add( k + 1, mv );
                 }
-                 */
+                */
 
                 if( calcTotal( list.get(k) ) < calcTotal( list.get(k + 1) ) ) {
                     Student mv = list.remove(k);
@@ -535,6 +553,14 @@ public class Sorter
         }
     }
 
+    /* End the many sorting methods */
+
+    /*
+    *   Tricky little method
+    *   Given a filewriter, write the given string with the given length
+    *   If the string is too short, put some spaces
+    *   If the string is too long, strip the ending
+    */
     public void write(FileWriter f, String s, int length) throws Exception {
         while(s.length() < length) s += " ";
 
@@ -543,6 +569,10 @@ public class Sorter
         f.write(s);
     }
 
+    /*
+    *   Grand sorting method
+    *   outputs some cool debug info, calls the actual sorting methods
+    */
     public void sort() {
         Timer overall = new Timer();
         overall.start();
@@ -552,34 +582,34 @@ public class Sorter
         out("Deleting previous results...");
 
         Timer delete = new Timer();
-        delete.start();
+        delete.start(); //Delete previous results
 
         Data.runner.delete(new File("Sorted"));
 
         delete.stop();
 
         out("Sorting by total...");
-        sortByTotal();
+        sortByTotal(); //Sort by total
 
         out("Sorting by test and division...");
-        for( TestScores s : Data.runner.testScores ) {
+        for( TestScores s : Data.runner.testScores ) { //Sort by test
             debug("Sorting " + s.name);
             sortByTest( s.name );
 
-            for(String st : getDivisions() ) {
+            for(String st : getDivisions() ) { //Sort by each division per test
                 debug("Sorting " + s.name + " - " + st);
                 sortBy( s.name, st );
             }
         }
 
         out("Sorting by team...");
-        for(String s : getSchools()) {
+        for(String s : getSchools()) { //Sort teams, find their totals
             debug("Sorting by " + s);
             sortBySchool(s);
         }
 
         out("Sorting by division...");
-        for(String s : getDivisions()) {
+        for(String s : getDivisions()) { //Sort out the divisions (Honors, Scholastic, Varsity)
             debug("Sorting by " + s);
             sortByDivision(s);
         }
@@ -591,6 +621,8 @@ public class Sorter
         out("Deletion took " + delete.takenInS() + " seconds");
     }
 
+    //Given a team name, find the students whose scores actually count,
+    //and add them up
     public int getTeamTotal(String n) {
         ArrayList<Student> team = new ArrayList<Student>();
 
@@ -617,6 +649,8 @@ public class Sorter
         return total;
     }
 
+    //Useful little method
+    //Does the given student's score count towards the team's total?
     public boolean isPartOfTeam(Student s) {
         String num = s.num;
 
@@ -642,6 +676,10 @@ public class Sorter
         return false;
     }
 
+    //Some other helper methods
+
+    //Loop the students, build an arraylist of the schools
+    //that are found
     public ArrayList<String> getSchools() {
         ArrayList<String> schools = new ArrayList<String>();
 
@@ -664,6 +702,7 @@ public class Sorter
         return schools;
     }
 
+    //Loop students, build arraylist of found divisions
     public ArrayList<String> getDivisions() {
         ArrayList<String> divisions = new ArrayList<String>();
 
@@ -686,6 +725,7 @@ public class Sorter
         return divisions;
     }
 
+    //Helpful!
     public int calcTotal(Student s) {
         int toRet = 0;
 

@@ -1,3 +1,11 @@
+/*
+*   The main class, the runner class
+*   orders everything else around
+*
+*   Contains the main loop, handles the commands
+*   Controls output
+*/
+
 import java.io.*;
 import java.util.*;
 
@@ -7,8 +15,11 @@ import Util.*;
 public class Runner implements InputUser, Runnable
 {
 
-    //Constants
+    //Static Constants
     static int PRINT_SLEEP_TIME = 5;
+
+    //Static
+    static boolean GUI = true; //Allow program to run without GUI
 
     //Booleans
     boolean DEBUG = true;
@@ -24,14 +35,22 @@ public class Runner implements InputUser, Runnable
     Logger debugLog = new Logger("Runner", "Debug");
 
     //GUI
-    //Terminal term = new Terminal();
-    MainGUI gui = new MainGUI();
+    MainGUI gui;
 
     //Stuff
     ArrayList<TestScores> testScores = new ArrayList<TestScores>();
     ArrayList<String> commands = new ArrayList<String>();
 
     public static void main(String[] args) {
+
+        for(String s : args) { //Allow us to specify that the program will not be using the GUI
+
+            if(s.equals("NOGUI")) {
+                GUI = false;
+            }
+
+        }
+
         Runner r = new Runner();
 
         for(String s : args) {
@@ -41,6 +60,17 @@ public class Runner implements InputUser, Runnable
     }
 
     public Runner() {
+
+        //If the program is not using the gui, just sort and stop
+        if( !GUI ) {
+            inputText("sort");
+            inputText("stop");
+        }
+
+        if( GUI ) gui = new MainGUI();
+
+        outAll("AcaScore - By Darian Marvel");
+        if( GUI ) gui.frame.setTitle("AcaScore - By Darian Marvel");
 
         debug("Starting...");
 
@@ -52,25 +82,27 @@ public class Runner implements InputUser, Runnable
         outAll("Deleting previous results...");
         delete( new File("Sorted") );
         outAll("Done. Creating objects...");
-         */
+        */
 
         //Create useful objects
         scoreReader = new ScoreReader();
         sHandler = new StudentHandler();
         sorter = new Sorter();
 
-        gui.r = this;
-        gui.term.setUser(this);
+        if(GUI) {
+            gui.r = this;
+            gui.term.setUser(this);
+        }
 
-        debug("Finished setup");
+        debug("Finished object setup");
 
         outAll("Starting read...");
 
+        //Read score data from files ("Input/*")
         for(File f : scoreReader.listFiles()) {
-            //if(DEBUG) out( scoreReader.read( f ) + "\n" );
             outAll("Reading " + f.getName() );
-            //sHandler.pack( scoreReader.read( f ) );
             testScores.add( scoreReader.read( f ) );
+            //Pack test scores to students
             debug("Packing " + f.getName());
             sHandler.pack( testScores.get( testScores.size() - 1 ) );
         }
@@ -81,7 +113,7 @@ public class Runner implements InputUser, Runnable
             //out(s.toString());
             out(s.name);
         }
-        
+
         for(TestScores t : testScores) {
             out(t.name + ": " + t.scores.count());
             //out(t.toString());
@@ -96,14 +128,14 @@ public class Runner implements InputUser, Runnable
         delete( new File("Sorted/Combine.txt") );
 
         try {
-            //add( new File("Sorted") );
-            
+            //add( new File("Sorted") ); //Let's combine in the order that we want
+
             add( new File("Sorted/Total") );
             add( new File("Sorted/CompDiv") );
             add( new File("Sorted/Special") );
             add( new File("Sorted/Test") );
             add( new File("Sorted/Team") );
-            
+
             //add( new File("Sorted/ActDiv") );
 
         }catch(Exception e) {
@@ -113,6 +145,7 @@ public class Runner implements InputUser, Runnable
     }
 
     public void add(File f) throws Exception {
+        //If it's a directory, add the contents instead
         if( f.isDirectory() ) {
             debug("Entering " + f.getName() + "/");
             File[] files = f.listFiles();
@@ -121,13 +154,15 @@ public class Runner implements InputUser, Runnable
                 try{
                     add(file);
                 }catch(Exception e) {
-                    
+
                 }
             }
-            
+
             return;
         }
-        
+
+        //Read the file, put data into "Sorted/Combine.txt"
+
         debug("Combining " + f.getName());
 
         Scanner scanny;
@@ -142,16 +177,25 @@ public class Runner implements InputUser, Runnable
             writer.write( System.getProperty("line.separator") );
         }
 
+        //Leave a nice little space between files
+
         writer.write( System.getProperty("line.separator") );
         writer.write( "-------------------------------" );
         writer.write( System.getProperty("line.separator") );
+
+        //Close everything
 
         scanny.close();
         writer.close();
 
     }
 
+    /*
+    * Recursively delete the contents of a folder, but not the folder(s) themselves
+    * Used to delete previous output before sorting and combining again
+    */
     public void delete( File f ) {
+        //If directory, delete contents
         if( f.isDirectory() ) {
 
             for( File file : f.listFiles() ) {
@@ -159,7 +203,7 @@ public class Runner implements InputUser, Runnable
             }
 
         }
-        else {
+        else { //Otherwise, delete the file
 
             try {
                 f.delete();
@@ -183,6 +227,12 @@ public class Runner implements InputUser, Runnable
         outAll("Stopping...");
     }
 
+    /*
+    *   Main loop
+    *   The program loops 10 times per second (about), and executes the commands
+    *   that are entered
+    *   That's about it....
+    */
     public void run() {
         debug("Starting Loop...");
 
@@ -212,14 +262,14 @@ public class Runner implements InputUser, Runnable
                 }
 
             }catch(Exception e) {
-                
+
                 e.printStackTrace();
 
                 outAll("Exception in main loop");
                 interInRow++;
                 outAll(interInRow + " exceptions in a row");
 
-                if(interInRow > 9 ) {
+                if(interInRow > 9 ) { //If there are 10 exceptions in a row, give up
                     going = false;
                     outAll("Giving up, too many exceptions in a row");
                 }
@@ -231,16 +281,23 @@ public class Runner implements InputUser, Runnable
         outAll("Stopping...");
 
         //Handle shutdown
+
         sHandler.saveAll();
 
         outAll("Done");
         outAll("Exit");
 
-        sleep(1000);
+        sleep(1000); //Really not necessary...but it's dramatic
 
         System.exit(0);
     }
 
+    /*
+    *   Where everything happens, which isn't much
+    *   But it happens
+    *
+    *   Executes queued commands
+    */
     public void tick() {
         while(commands.size() > 0) doCommand(commands.remove(0));
     }
@@ -249,6 +306,9 @@ public class Runner implements InputUser, Runnable
         commands.add(s);
     }
 
+    /*
+    *   Where the commands are actually done
+    */
     public void doCommand(String s) {
         debug("COMMAND: " + s);
 
@@ -299,8 +359,14 @@ public class Runner implements InputUser, Runnable
         }
     }
 
+    /*
+    *   Output, sleep....
+    *
+    *
+    */
+
     public void out(String s) {
-        gui.out("[RUNNER] " + s);
+        if(GUI) gui.out("[RUNNER] " + s);
         logger.log(s);
 
         System.out.println("[STANDARD] " + s );
@@ -309,7 +375,7 @@ public class Runner implements InputUser, Runnable
     }
 
     public void debug(String s) {
-        gui.debug(s);
+        if(GUI) gui.debug(s);
         debugLog.log(s);
 
         System.out.println("[DEBUG] " + s );

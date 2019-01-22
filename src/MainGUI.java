@@ -1,17 +1,27 @@
+/*
+*   What the user sees
+*
+*   The buttons simply input their action commands to the runner
+*/
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-public class MainGUI implements ActionListener 
+public class MainGUI implements ActionListener
 {
+    //Labels that should be removed...
     JLabel label = new JLabel("Loading...");
     JLabel label2 = new JLabel("Loading...");
     JLabel label3 = new JLabel("Loading...");
     JLabel label4 = new JLabel("Loading...");
     JLabel label5 = new JLabel("Loading...");
+
+    //The stuff that's useful
     JFrame frame = new JFrame();
     Runner r;
     TerminalPanel term = new TerminalPanel();
     TerminalPanel term2 = new TerminalPanel();
+
     public MainGUI() {
 
         frame.setLocationRelativeTo(null);
@@ -57,6 +67,8 @@ public class MainGUI implements ActionListener
         //tabbedPane.add("Tab 2", panel3);
         //tabbedPane.add("Info Tab", panel2);
         tabbedPane.add("Debug Tab", term2);
+
+        /*
 
         //Set up panels and buttons for Tabcursion
 
@@ -104,6 +116,8 @@ public class MainGUI implements ActionListener
         //Add the last tab
         //tabbedPane.add("Tabcursion",tabbedPane2);
 
+        */
+
         //frame.add(panel, BorderLayout.CENTER);
 
         frame.add(tabbedPane);
@@ -120,14 +134,6 @@ public class MainGUI implements ActionListener
         String command = e.getActionCommand();
 
         r.inputText(command);
-        /*
-        if(false) {
-
-        }
-        else {
-        r.GUIClick(e.getActionCommand());
-        }
-         */
     }
 
     public void update() {
@@ -142,12 +148,14 @@ public class MainGUI implements ActionListener
         term2.write(s);
     }
 
+    //Helpful little method
+    //Makes setting up buttons MUCH easier
     public JButton getNewButton(String name, String command) {
         JButton button = new JButton(name);
         button.addActionListener(this);
         button.setActionCommand(command);
 
-        button.setBackground( new Color( (float)0.7, (float)0.7, (float)0.7 ) );
+        button.setBackground( new Color( (float)0.8, (float)0.6, (float)0.6 ) );
 
         //button.setBackground( new Color( (float)Math.random(), (float)Math.random(), (float)Math.random() ) ); //Caution: Random
 
